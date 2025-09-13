@@ -8,37 +8,37 @@ using Microsoft.Extensions.Configuration;
 
 class Program
 {
-
     static async Task Main(string[] args)
     {
         var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-
-
         var url = config["Configs:url"];
         var textFind = config["Messages:textFind"];
         var interval = TimeSpan.FromHours(1);
 
         using (HttpClient client = new HttpClient())
         {
-            try
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (monitor-site/1.0)");
+            while (true)
             {
-                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (monitor-site/1.0)");
-                string html = await client.GetStringAsync(url);
-                if (html.Contains(textFind))
+                try
                 {
-                    Console.WriteLine(config["Messages:outOfService"] + DateTime.Now.ToString());
-                    await sendEmail(config);
+                    string html = await client.GetStringAsync(url);
+                    if (html.Contains(textFind))
+                    {
+                        Console.WriteLine(config["Messages:outOfService"] + " -> " + DateTime.Now.ToString());
+                        await sendEmail(config);
+                    }
+                    else
+                    {
+                        Console.WriteLine(config["Messages:inService"] + " -> " + DateTime.Now.ToString());
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine(config["Messages:inService"] + DateTime.Now.ToString());
+                    Console.WriteLine(config["Messages:notFound"] + $" Error: {ex.Message}");
                 }
+                await Task.Delay(interval);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(config["Messages:notFound"] + $"{ex.Message}");
-            }
-            await Task.Delay(interval);
         }
     }
     static async Task sendEmail(IConfiguration config)
@@ -60,14 +60,14 @@ class Program
             mail.From = new MailAddress(config["Email:mailFrom"], "SiteMonitor");
             mail.To.Add(emailTo);
             mail.Subject = config["Email:Subject"];
-            mail.Body = config["Email:Body"] + DateTime.Now.ToString();
+            mail.Body = config["Email:Body"] + " -> " + DateTime.Now.ToString();
 
             await smtp.SendMailAsync(mail);
             Console.WriteLine(config["Messages:alertValid"]);
         }
         catch (Exception ex)
         {
-            Console.WriteLine(config["Messages:alertInvalid"] + $"{ex.Message}");
+            Console.WriteLine(config["Messages:alertInvalid"] + $" -> {ex.Message}");
         }
     }
 }
