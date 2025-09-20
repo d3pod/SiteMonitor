@@ -12,7 +12,8 @@ class Program
     {
         var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
         string? url = config["Configs:url"];
-        string? textFind = config["Messages:textFind"];
+        string? textFind1 = config["Messages:textFind"];
+        string? textFind2 = config["Messages:textFind2"];
         var interval = TimeSpan.FromHours(1);
 
         using (HttpClient client = new HttpClient())
@@ -23,7 +24,7 @@ class Program
                 try
                 {
                     string html = await client.GetStringAsync(url);
-                    if (html.Contains(textFind))
+                    if (html.Contains(textFind1) || html.Contains(textFind2))
                     {
                         Console.WriteLine(config["Messages:outOfService"] + " -> " + DateTime.Now.ToString());
                         await sendEmail(config);
