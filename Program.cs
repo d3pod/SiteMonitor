@@ -11,8 +11,8 @@ class Program
     static async Task Main(string[] args)
     {
         var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-        var url = config["Configs:url"];
-        var textFind = config["Messages:textFind"];
+        string? url = config["Configs:url"];
+        string? textFind = config["Messages:textFind"];
         var interval = TimeSpan.FromHours(1);
 
         using (HttpClient client = new HttpClient())
@@ -43,9 +43,9 @@ class Program
     }
     static async Task sendEmail(IConfiguration config)
     {
-        string emailFrom = config["Email:emailFrom"];
-        string emailTo = config["Email:emailTo"];
-        string smtpServer = config["Email:smtpServer"];
+        string? emailFrom = config["Email:emailFrom"];
+        string? emailTo = config["Email:emailTo"];
+        string? smtpServer = config["Email:smtpServer"];
         int smtpPort = Convert.ToInt32(config["Email:smtpPort"]);
 
         try
@@ -57,7 +57,7 @@ class Program
             };
 
             var mail = new MailMessage();
-            mail.From = new MailAddress(config["Email:mailFrom"], "SiteMonitor");
+            mail.From = new MailAddress(emailFrom, "SiteMonitor");
             mail.To.Add(emailTo);
             mail.Subject = config["Email:Subject"];
             mail.Body = config["Email:Body"] + " -> " + DateTime.Now.ToString();
