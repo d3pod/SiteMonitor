@@ -26,23 +26,35 @@ class Program
                     string html = await client.GetStringAsync(url);
                     if (html.Contains(textFind1) || html.Contains(textFind2))
                     {
-                        Console.WriteLine(config["Messages:outOfService"] + " -> " + DateTime.Now.ToString());
+                        Log(config["Messages:outOfService"] + " -> " + DateTime.Now.ToString());
                         await sendEmail(config);
                     }
                     else
                     {
-                        Console.WriteLine(config["Messages:inService"] + " -> " + DateTime.Now.ToString());
+                        Log(config["Messages:inService"] + " -> " + DateTime.Now.ToString());
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(config["Messages:notFound"] + $" Error: {ex.Message}");
+                    Log(config["Messages:notFound"] + $" Error: {ex.Message}");
                     await sendEmail(config);
                 }
                 await Task.Delay(interval);
             }
         }
     }
+    static void Log(string message)
+    {
+        string logDir = "logs";
+        if (!Directory.Exists(logDir))
+            Directory.CreateDirectory(logDir);
+
+        string logFile = Path.Combine(logDir, "SiteMonitor.log");
+        string line = message;
+
+        File.AppendAllText(logFile, line);
+    }
+
     static async Task sendEmail(IConfiguration config)
     {
         string? emailFrom = config["Email:emailFrom"];
