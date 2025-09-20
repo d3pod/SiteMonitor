@@ -12,7 +12,7 @@ class Program
     {
         var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
         string? url = config["Configs:url"];
-        string? textFind1 = config["Messages:textFind"];
+        string? textFind1 = config["Messages:textFind1"];
         string? textFind2 = config["Messages:textFind2"];
         var interval = TimeSpan.FromHours(1);
 
@@ -37,6 +37,7 @@ class Program
                 catch (Exception ex)
                 {
                     Console.WriteLine(config["Messages:notFound"] + $" Error: {ex.Message}");
+                    await sendEmail(config);
                 }
                 await Task.Delay(interval);
             }
